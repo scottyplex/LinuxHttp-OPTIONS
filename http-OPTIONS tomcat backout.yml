@@ -1,7 +1,7 @@
 ---
 # This will search for any backups Ansible created durring remediation and implement it
 - name: http-OPTIONS Backout
-  hosts: VSPM_httpOPTIONS_Backout
+  hosts: httpOPTIONS_hosts_Backout
 
   vars:
     web_file: '/apps/appliedpathways/tomcat/instance_1/conf/web.xml'
