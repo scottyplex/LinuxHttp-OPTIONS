@@ -1,7 +1,7 @@
 ---
 # This will return a 403 Forbidden message when trying OPTIONS or TRACE.
 - name: http-OPTIONS Tomcat Remediation
-  hosts: VSPM_httpOPTIONS
+  hosts: httpOPTIONS_host
 
   tasks:
     - name: "Adding ReWriteEngine conditions"
