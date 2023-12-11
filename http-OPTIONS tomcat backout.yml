@@ -1,0 +1,67 @@
+---
+# This will search for any backups Ansible created durring remediation and implement it
+- name: http-OPTIONS Backout
+  hosts: VSPM_httpOPTIONS_Backout
+
+  vars:
+    web_file: '/apps/appliedpathways/tomcat/instance_1/conf/web.xml'
+    web_file2: '/apps/appliedpathways/tomcat/instance_2/conf/web.xml'
+
+  tasks:
+    - name: "Find all backups for {{ web_file }}"
+      ansible.builtin.find:
+        recurse: no
+        path:
+          - "{{ web_file | dirname }}"
+        patterns:
+          - '{{ web_file | basename }}\..*~'
+        use_regex: true
+      register: find_backup
+
+    - name: Select the latest backup
+      ansible.builtin.set_fact:
+        latest_backup: "{{ (find_backup.files | sort(attribute='mtime') | last).path }}"
+
+    - name: Show the latest backup
+      ansible.builtin.debug:
+        var: latest_backup
+
+    - name: "Restore latest backup of {{ web_file }}"
+      ansible.builtin.copy:
+        src: "{{ latest_backup }}"
+        remote_src: true
+        dest: "{{ web_file }}"
+
+    - name: "Find all backups for {{ web_file2 }}"
+      ansible.builtin.find:
+        recurse: no
+        path:
+          - "{{ web_file2 | dirname }}"
+        patterns:
+          - '{{ web_file2 | basename }}\..*~'
+        use_regex: true
+      register: find_backup
+
+    - name: Select the latest backup
+      ansible.builtin.set_fact:
+        latest_backup: "{{ (find_backup.files | sort(attribute='mtime') | last).path }}"
+
+    - name: Show the latest backup
+      ansible.builtin.debug:
+        var: latest_backup
+
+    - name: "Restore latest backup of {{ web_file2 }}"
+      ansible.builtin.copy:
+        src: "{{ latest_backup }}"
+        remote_src: true
+        dest: "{{ web_file2 }}"
+
+    - name: restart tomcat-apollo.service
+      ansible.builtin.service:
+        name: tomcat-apollo.service
+        state: restarted
+
+    - name: restart tomcat-dtact.service
+      ansible.builtin.service:
+        name: tomcat-dtact.service
+        state: restarted

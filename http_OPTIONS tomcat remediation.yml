@@ -1,0 +1,47 @@
+---
+# This will return a 403 Forbidden message when trying OPTIONS or TRACE.
+- name: http-OPTIONS Tomcat Remediation
+  hosts: VSPM_httpOPTIONS
+
+  tasks:
+    - name: "Adding ReWriteEngine conditions"
+      ansible.builtin.blockinfile:
+        path: '/apps/appliedpathways/tomcat/instance_1/conf/web.xml'
+        block: | 
+          <security-constraint>
+            <web-resource-collection>
+              <web-resource-name>restricted methods</web-resource-name>
+              <url-pattern>/*</url-pattern>
+              <http-method>OPTIONS</http-method>
+              <http-method>TRACE</http-method>
+            </web-resource-collection>
+            <auth-constraint />
+          </security-constraint>
+        insertbefore: '^.*</web-app>'
+        backup: true
+
+    - name: "Adding ReWriteEngine conditions"
+      ansible.builtin.blockinfile:
+        path: '/apps/appliedpathways/tomcat/instance_2/conf/web.xml'
+        block: | 
+          <security-constraint>
+            <web-resource-collection>
+              <web-resource-name>restricted methods</web-resource-name>
+              <url-pattern>/*</url-pattern>
+              <http-method>OPTIONS</http-method>
+              <http-method>TRACE</http-method>
+            </web-resource-collection>
+            <auth-constraint />
+          </security-constraint>
+        insertbefore: '^.*</web-app>'
+        backup: true
+  
+    - name: restart tomcat-apollo.service
+      ansible.builtin.service:
+        name: tomcat-apollo.service
+        state: restarted
+
+    - name: restart tomcat-dtact.service
+      ansible.builtin.service:
+        name: tomcat-dtact.service
+        state: restarted

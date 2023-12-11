@@ -1,0 +1,23 @@
+---
+# This will return a 403 Forbidden message when trying OPTIONS or TRACE.
+- name: http-OPTIONS Apache Remediation
+  hosts: VSPM_httpOPTIONS
+
+  tasks:
+    - name: "Adding ReWriteEngine conditions"
+      ansible.builtin.blockinfile:
+        path: '/etc/httpd/conf/httpd.conf'
+        block: | 
+          <Location />
+            <LimitExcept GET POST>
+              order deny,allow
+              deny from all
+            </LimitExcept>
+          </Location>
+        insertafter: EOF
+        backup: true
+  
+    - name: restart sshd service
+      ansible.builtin.service:
+        name: httpd
+        state: restarted
